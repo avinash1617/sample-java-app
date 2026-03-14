@@ -31,21 +31,4 @@ jobs:
       - name: Generate SBOM
         kind: scan
         uses: docker://anchore/syft:latest
-        run: |
-          syft dir:/cloudbees/workspace/sample-java-app -o cyclonedx-json > sbom.json
-          ls -l
-
-      # Step 4: Build Container Image
-      - name: Build Docker Image
-        kind: build
-        uses: docker://docker:24.0
-        run: |
-          cd sample-java-app
-          docker build -t sample-java-app:latest .
-
-      # Step 5: Container Image Vulnerability Scan
-      - name: Container Scan
-        kind: scan
-        uses: docker://aquasec/trivy:latest
-        run: |
-          trivy image --severity HIGH,CRITICAL sample-java-app:latest
+        entrypoint:
