@@ -11,15 +11,12 @@ jobs:
   build:
     steps:
 
-      # Step 1: Checkout Code
       - name: Checkout Code
         kind: build
         uses: docker://alpine/git:latest
         run: |
           git clone https://github.com/avinash1617/sample-java-app.git
-          ls -l
 
-      # Step 2: Maven Build
       - name: Maven Build
         kind: build
         uses: docker://maven:3.9.14-eclipse-temurin-8
@@ -27,17 +24,18 @@ jobs:
           cd sample-java-app
           mvn clean package
 
-      # Step 3: Generate SBOM
       - name: Generate SBOM
         kind: scan
-        uses: docker://anchore/syft:latest
+        uses: docker://alpine:3.19
         run: |
+          apk add --no-cache curl
+          curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
           syft dir:/cloudbees/workspace/sample-java-app -o cyclonedx-json > sbom.json
-          ls -l
 
-      # Step 4: Vulnerability Scan
-      - name: Trivy Filesystem Scan
+      - name: Trivy Scan
         kind: scan
-        uses: docker://aquasec/trivy:latest
+        uses: docker://alpine:3.19
         run: |
-          trivy fs /cloudbees/workspace/sample-java-app
+          apk add --no-cache curl
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh
+          ./bin/trivy fs /cloudbees/workspace/sample-java-app
