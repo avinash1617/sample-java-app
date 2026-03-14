@@ -1,6 +1,6 @@
 apiVersion: automation.cloudbees.io/v1alpha1
 kind: workflow
-name: My workflow
+name: sample-java-app-workflow
 
 on:
   push:
@@ -31,17 +31,13 @@ jobs:
       - name: Generate SBOM
         kind: scan
         uses: docker://anchore/syft:latest
-        entrypoint: syft
-        args:
-          - dir:/cloudbees/workspace/sample-java-app
-          - -o
-          - cyclonedx-json
+        run: |
+          syft dir:/cloudbees/workspace/sample-java-app -o cyclonedx-json > sbom.json
+          ls -l
 
-      # Step 4: Filesystem Vulnerability Scan
-      - name: Trivy Scan
+      # Step 4: Vulnerability Scan
+      - name: Trivy Filesystem Scan
         kind: scan
         uses: docker://aquasec/trivy:latest
-        entrypoint: trivy
-        args:
-          - fs
-          - /cloudbees/workspace/sample-java-app
+        run: |
+          trivy fs /cloudbees/workspace/sample-java-app
