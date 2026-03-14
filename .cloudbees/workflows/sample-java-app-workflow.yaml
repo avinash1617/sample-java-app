@@ -23,7 +23,6 @@ jobs:
         run: |
           cd sample-java-app
           mvn clean package
-          ls -ltra target
 
       - name: Generate SBOM
         kind: scan
@@ -32,8 +31,6 @@ jobs:
           apk add --no-cache curl
           curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
           syft dir:/cloudbees/workspace/sample-java-app -o cyclonedx-json > sbom.json
-          pwd
-          ls -ltra
 
       - name: Trivy Filesystem Scan
         kind: scan
@@ -43,18 +40,11 @@ jobs:
           curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh
           ./bin/trivy fs /cloudbees/workspace/sample-java-app
 
-      - name: Build Docker Image
+      - name: Build Container Image with Kaniko
         kind: build
-        uses: docker://docker:24
+        uses: docker://gcr.io/kaniko-project/executor:latest
         run: |
-          cd sample-java-app
-          docker build -t sample-java-app:latest .
-          docker images
-
-      - name: Trivy Container Image Scan
-        kind: scan
-        uses: docker://alpine:3.19
-        run: |
-          apk add --no-cache curl
-          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh
-          ./bin/trivy image sample-java-app:latest
+          /kaniko/executor \
+          --context /cloudbees/workspace/sample-java-app \
+          --dockerfile /cloudbees/workspace/sample-java-app/Dockerfile \
+          --destination docker.io/YOUR_DOCKERHUB_USERNAME/sample-java-app:latest
