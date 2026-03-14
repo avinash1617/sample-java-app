@@ -31,6 +31,8 @@ jobs:
           apk add --no-cache curl
           curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
           syft dir:/cloudbees/workspace/sample-java-app -o cyclonedx-json > sbom.json
+          pwd
+          ls -ltra
 
       - name: Trivy Scan
         kind: scan
