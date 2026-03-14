@@ -1,27 +1,51 @@
 apiVersion: automation.cloudbees.io/v1alpha1
 kind: workflow
 name: My workflow
+
 on:
   push:
     branches:
       - "**"
+
 jobs:
   build:
     steps:
-      # Step 1: Checkout code
+
+      # Step 1: Checkout Code
       - name: Checkout Code
         kind: build
         uses: docker://alpine/git:latest
         run: |
           git clone https://github.com/avinash1617/sample-java-app.git
-          ls
+          ls -l
 
       # Step 2: Maven Build
       - name: Maven Build
         kind: build
         uses: docker://maven:3.9.14-eclipse-temurin-8
         run: |
-          pwd
-          ls -ltra
-          cd /cloudbees/workspace/sample-java-app
+          cd sample-java-app
           mvn clean package
+
+      # Step 3: Generate SBOM
+      - name: Generate SBOM
+        kind: scan
+        uses: docker://anchore/syft:latest
+        run: |
+          syft dir:/cloudbees/workspace/sample-java-app -o cyclonedx-json > sbom.json
+          ls -l
+
+      # Step 4: Build Container Image
+      - name: Build Docker Image
+        kind: build
+        uses: docker://docker:24.0
+        run: |
+          cd sample-java-app
+          docker build -t sample-java-app:latest .
+
+      # Step 5: Container Image Vulnerability Scan
+      - name: Container Scan
+        kind: scan
+        uses: docker://aquasec/trivy:latest
+        run: |
+          trivy image --severity HIGH,CRITICAL sample-java-app:latest
