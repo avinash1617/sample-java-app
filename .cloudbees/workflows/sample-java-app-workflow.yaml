@@ -23,6 +23,7 @@ jobs:
         run: |
           cd sample-java-app
           mvn clean package
+          ls -ltra target
 
       - name: Generate SBOM
         kind: scan
@@ -34,10 +35,26 @@ jobs:
           pwd
           ls -ltra
 
-      - name: Trivy Scan
+      - name: Trivy Filesystem Scan
         kind: scan
         uses: docker://alpine:3.19
         run: |
           apk add --no-cache curl
           curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh
           ./bin/trivy fs /cloudbees/workspace/sample-java-app
+
+      - name: Build Docker Image
+        kind: build
+        uses: docker://docker:24
+        run: |
+          cd sample-java-app
+          docker build -t sample-java-app:latest .
+          docker images
+
+      - name: Trivy Container Image Scan
+        kind: scan
+        uses: docker://alpine:3.19
+        run: |
+          apk add --no-cache curl
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh
+          ./bin/trivy image sample-java-app:latest
