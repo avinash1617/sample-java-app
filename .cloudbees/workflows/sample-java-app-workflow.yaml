@@ -1,0 +1,27 @@
+apiVersion: automation.cloudbees.io/v1alpha1
+kind: workflow
+name: My workflow
+on:
+  push:
+    branches:
+      - "**"
+jobs:
+  build:
+    steps:
+      # Step 1: Checkout code
+      - name: Checkout Code
+        kind: build
+        uses: docker://alpine/git:latest
+        run: |
+          git clone https://github.com/avinash1617/sample-java-app.git
+          ls
+
+      # Step 2: Maven Build
+      - name: Maven Build
+        kind: build
+        uses: docker://maven:3.9.14-eclipse-temurin-8
+        run: |
+          pwd
+          ls -ltra
+          cd /cloudbees/workspace/sample-java-app
+          mvn clean install
