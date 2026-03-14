@@ -42,9 +42,9 @@ jobs:
 
       - name: Build Container Image with Kaniko
         kind: build
-        uses: docker://gcr.io/kaniko-project/executor:latest
+        uses: docker://gcr.io/kaniko-project/executor:debug
         run: |
           /kaniko/executor \
           --context /cloudbees/workspace/sample-java-app \
           --dockerfile /cloudbees/workspace/sample-java-app/Dockerfile \
-          --destination docker.io/YOUR_DOCKERHUB_USERNAME/sample-java-app:latest
+          --no-push
