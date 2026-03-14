@@ -31,4 +31,17 @@ jobs:
       - name: Generate SBOM
         kind: scan
         uses: docker://anchore/syft:latest
-        entrypoint:
+        entrypoint: syft
+        args:
+          - dir:/cloudbees/workspace/sample-java-app
+          - -o
+          - cyclonedx-json
+
+      # Step 4: Filesystem Vulnerability Scan
+      - name: Trivy Scan
+        kind: scan
+        uses: docker://aquasec/trivy:latest
+        entrypoint: trivy
+        args:
+          - fs
+          - /cloudbees/workspace/sample-java-app
