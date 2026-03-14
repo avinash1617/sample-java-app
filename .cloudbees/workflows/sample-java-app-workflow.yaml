@@ -24,4 +24,4 @@ jobs:
           pwd
           ls -ltra
           cd /cloudbees/workspace/sample-java-app
-          mvn clean install
+          mvn clean package
